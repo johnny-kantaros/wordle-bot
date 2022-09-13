@@ -1,2 +1,3 @@
-# wordle-bot
-Algorithm to optimally solve daily wordle
+# Wordle-bot
+
+## Introduction
