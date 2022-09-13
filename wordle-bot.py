@@ -9,7 +9,8 @@ import random
 
 
 
-word_hash = dict()
+guess_hash = dict()
+answer_hash = dict()
 filler_hash = dict()
 yellow_letters = []
 green_letters = []
@@ -24,7 +25,7 @@ def playGame():
 
     #Preprocess
 
-    global word_hash
+    global guess_hash
     global filler_hash
     global green_letters
     global yellow_letters
@@ -48,13 +49,13 @@ def playGame():
 
             # Check if only one word left (User wins)
             
-            if len(word_hash) == 1: # Check if user won
-                print("\nCongrats! The word was " + str(list(word_hash)[0]) + "\nYou won in " + str(guess_count) + " guesses!\n")
+            if len(answer_hash) == 1: # Check if user won
+                print("\nCongrats! The word was " + str(list(answer_hash)[0]) + "\nYou won in " + str(guess_count) + " guesses!\n")
                 play_game = False
                 
             
 
-            elif len(word_hash) == 0:
+            elif len(answer_hash) == 0:
                 print("No words left! Is it possible you typed the results incorrectly?")
                 play_game = False
                 break
@@ -68,11 +69,11 @@ def playGame():
                 normalize()
                 normalize_filler()
 
-                print("Possible Guesses left: " + str(len(word_hash)))
+                print("Possible Words left: " + str(len(answer_hash)))
 
                 choice = printChoice()
 
-                if choice == "7":
+                if choice == '9':
                     play_game = False
                     break
             
@@ -85,7 +86,7 @@ def playGame():
                 result_dict, got_word = getResults()
 
                 if got_word == True: # User guessed word right
-                    print("\nCongrats! The word was " + str(list(word_hash)[0]) + "\nYou won in " + str(guess_count) + " guesses!\n")
+                    print("\nCongrats! The word was " + str(list(answer_hash)[0]) + "\nYou won in " + str(guess_count) + " guesses!\n")
                     play_game = False
 
 
@@ -153,7 +154,7 @@ def interpretResults(result_dict, guess):
     count = 0
 
     # Use copy in order to make real time deletions
-    for word, weight in word_hash.copy().items():
+    for word, weight in guess_hash.copy().items():
         count += 1
     
 
@@ -161,7 +162,7 @@ def interpretResults(result_dict, guess):
 
             # Green
             if result == 'g' and guess[index] != word[index]:
-                del word_hash[word]
+                del guess_hash[word]
                 green += 1
                 break
 
@@ -176,12 +177,12 @@ def interpretResults(result_dict, guess):
                 #   but only one in word
 
                 if guess[index] not in word or guess[index] == word[index]:
-                    del word_hash[word]
+                    del guess_hash[word]
                     yellow += 1
                     break
 
                 elif word.count(letter) < duplicates[letter]["y"]:
-                    del word_hash[word]
+                    del guess_hash[word]
                     yellow += 1
                     break
 
@@ -199,12 +200,12 @@ def interpretResults(result_dict, guess):
                 total_occurrences = duplicates[letter]["g"] + duplicates[letter]["y"]
 
                 if total_occurrences != word.count(letter):
-                    del word_hash[word]
+                    del guess_hash[word]
                     passed +=1
                     break
 
                 elif guess[index] == word[index]:
-                    del word_hash[word]
+                    del guess_hash[word]
                     passed +=1
                     break
 
@@ -249,7 +250,59 @@ def interpretResults(result_dict, guess):
 
 
 
+# Answer Hash
 
+
+
+    yellow = 0
+    green = 0
+    passed = 0
+    count = 0
+
+    # Use copy in order to make real time deletions
+    for word, weight in answer_hash.copy().items():
+        count += 1
+    
+
+        for index, result in result_dict.copy().items(): # iterate over result, compare to word
+
+            # Green
+            if result == 'g' and guess[index] != word[index]:
+                del answer_hash[word]
+                green += 1
+                break
+
+            # Yellow
+            elif result == 'y':
+
+                letter = guess[index]
+
+
+                if guess[index] not in word or guess[index] == word[index]:
+                    del answer_hash[word]
+                    yellow += 1
+                    break
+
+                elif word.count(letter) < duplicates[letter]["y"]:
+                    del answer_hash[word]
+                    yellow += 1
+                    break
+
+            # Grey
+            elif result == 'x':
+
+                letter = guess[index]
+                total_occurrences = duplicates[letter]["g"] + duplicates[letter]["y"]
+
+                if total_occurrences != word.count(letter):
+                    del answer_hash[word]
+                    passed +=1
+                    break
+
+                elif guess[index] == word[index]:
+                    del answer_hash[word]
+                    passed +=1
+                    break
 
 
 
@@ -292,39 +345,58 @@ def printChoice():
     choice = getChoice()
 
     if choice == "1":
-        print("\n" + str(list(word_hash)[0]))
+        print("\n" + str(list(guess_hash)[0]))
 
     elif choice == "2":
         
-        if len(word_hash) >= 5:
+        if len(guess_hash) >= 5:
             print("\n")
             for i in range(5):
-                print(str(list(word_hash)[i]))
+                print(str(list(guess_hash)[i]))
         
         else:
-            for word, weight in word_hash.items():
+            for word, weight in guess_hash.items():
                 print(word)
 
+
     elif choice == "3":
-                
-        for word, weight in word_hash.items():
-            print(word)
+        
+        if len(answer_hash) >= 5:
+            print("\n")
+            for i in range(5):
+                print(str(list(answer_hash)[i]))
+        
+        else:
+            for word, weight in answer_hash.items():
+                print(word)
+
 
     elif choice == "4":
+                
+        for word, weight in guess_hash.items():
+            print(word)
 
-        rand_index = random.randint(0, len(word_hash)-1)
-        print("\n" + str(list(word_hash)[rand_index]))
+    elif choice == "5":
+                
+        for word, weight in answer_hash.items():
+            print(word)
 
-    elif choice =="5":
+
+    elif choice == "6":
+
+        rand_index = random.randint(0, len(guess_hash)-1)
+        print("\n" + str(list(guess_hash)[rand_index]))
+
+    elif choice =="7":
         if len(filler_hash) > 0:
             print("\n" + str(list(filler_hash)[0]))
         else:
             print("No Filler words at this time!")
 
-    elif choice == "6":
-        print("\n" + str(list(word_hash)[len(word_hash)-1]))
+    elif choice == "8":
+        print("\n" + str(list(guess_hash)[len(guess_hash)-1]))
 
-    elif choice == "7":
+    elif choice == "9":
         print("Quitting . . . ")
 
     return choice
@@ -349,7 +421,7 @@ def getGuess():
 
         # Important to check if in dictionary
 
-        elif guess in word_hash or guess in filler_hash:
+        elif guess in guess_hash or guess in filler_hash:
             return guess
         
         else:
@@ -364,9 +436,9 @@ def getChoice():
 
     while True:
         
-        choice = input("\nChoose an option: \n\n0) Guess!\n1) Show optimal guess\n2) Show top 5 words\n3) Show all\n4) Random Word\n5) Filler word\n6) Worst guess\n7) Quit\n")
+        choice = input("\nChoose an option: \n\n0) Guess!\n1) Show optimal guess\n2) Show top 5 guesses\n3) Show top 5 possible answers\n4) Show all possible guesses\n5) Show all possible answers\n6) Random Guess\n7) Filler word\n8) Worst guess\n9) Quit\n")
 
-        if choice in ["0","1","2","3","4","5","6", "7"]:
+        if choice in ["0","1","2","3","4","5","6", "7", "8", "9"]:
             return choice
 
         
@@ -377,20 +449,33 @@ def getChoice():
 
 def readDict():
 
-    global word_hash # make hashtable have global scope
+    global guess_hash # make hashtable have global scope
     global filler_hash
+    global answer_hash
     
     with open("5LetterDictionary.txt", "r") as dictionary:
 
-        # For each word, we need to evaluate its letter frequency and location 
-        # in order to to perform statistical analysis
+        # Will use words to optimize guesses / Narrow down list
 
         for word in dictionary:
 
             word = word.upper().replace("\n", "") # Get rid of whitespace
 
-            word_hash[word] = 0 # Store in hashtable for easy look up, stop here
+            guess_hash[word] = 0 # Store in hashtable for easy look up, stop here
             filler_hash[word] = 0
+
+
+    with open("5_letter_possible_answers.txt", "r") as possible_words:
+
+        # For each word, we need to evaluate its letter frequency and location 
+        # in order to to perform statistical analysis
+
+        for word in possible_words:
+
+            word = word.upper().replace("\n", "") # Get rid of whitespace
+
+            answer_hash[word] = 0 # Store in hashtable for easy look up, stop here
+
  
             
             
@@ -404,7 +489,7 @@ def getStats():
     letter_location = [[0]*26 for i in range(5)]
     letter_distribution = [0]*26
 
-    for word, weight in word_hash.items():
+    for word, weight in answer_hash.items():
             
         weight = 0 # Reset Weight
         index_of_word = 0 # Keep track of whrere in word we are
@@ -436,12 +521,13 @@ def normalize():
     """
     
 
-    global word_hash
+    global guess_hash
+    global answer_hash
 
     letter_location, letter_distribution = getStats()
 
     stdev_distribution = statistics.stdev(letter_distribution) # stdev of distribution
-    mean_distribution = (len(word_hash) * 5) / 26 # Mean for letter distribution
+    mean_distribution = (len(answer_hash) * 5) / 26 # Mean for letter distribution
 
     # Create z-scores for distribution
     for i in range(len(letter_distribution)): 
@@ -451,7 +537,7 @@ def normalize():
     for index in letter_location:
 
         stdev_location = statistics.stdev(index)
-        mean_location = len(word_hash) / 26
+        mean_location = len(answer_hash) / 26
 
         for i in range(len(index)):
             
@@ -460,7 +546,7 @@ def normalize():
 
     # Now that we have Z-Scores, we can re-iterate through the words and assign weights
 
-    for word, weight in word_hash.items():
+    for word, weight in answer_hash.items():
 
         index_of_word = 0
         prev_letters = dict()
@@ -480,14 +566,49 @@ def normalize():
             index_of_word += 1
             prev_letters[letter] = letter
 
-        word_hash[word] = weight
+        answer_hash[word] = weight
     
 
 
     # Sort dictionary by weight in Descending order for optimal guesses
 
 
-    word_hash = dict(sorted(word_hash.items(), key=lambda item: item[1], reverse = True))
+    answer_hash = dict(sorted(answer_hash.items(), key=lambda item: item[1], reverse = True))
+
+
+
+    # DO SAME FOR GUESS HASH
+
+
+    for word, weight in guess_hash.items():
+
+        index_of_word = 0
+        prev_letters = dict()
+        weight = 0
+
+        
+        for letter in word:
+
+            char_index = ord(letter) - 65 # Get index
+            
+            if letter in prev_letters: # punish duplicates, bad guesses
+                weight -= abs(letter_distribution[char_index] + letter_location[index_of_word][char_index])
+
+            else:
+                weight += letter_distribution[char_index] + letter_location[index_of_word][char_index]
+            
+            index_of_word += 1
+            prev_letters[letter] = letter
+
+        guess_hash[word] = weight
+    
+
+
+    # Sort dictionary by weight in Descending order for optimal guesses
+
+
+    guess_hash = dict(sorted(guess_hash.items(), key=lambda item: item[1], reverse = True))
+
 
 
 
